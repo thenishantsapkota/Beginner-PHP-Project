@@ -1,6 +1,8 @@
 <?php
-    $errors = array("email" => "", "title" => "", "tags" => "");
-    $email = $title = $tags =  "";
+    include("config/db_connect.php");
+
+    $errors = array("email" => "", "title" => "", "tags" => "", "price" => "");
+    $email = $title = $tags = $price =  "";
     if(isset($_POST["submit"])){
         //check email
         if(empty($_POST["email"])){
@@ -30,8 +32,28 @@
             }
         }
 
+        // Check Price
+        if(empty($_POST["price"])){
+            $errors["price"] =  "Price is required <br />";
+        }else{
+            $price = $_POST["price"];
+        }
+
         if(!array_filter($errors)){
-            header("Location: index.php");
+            $email = mysqli_real_escape_string($conn, $_POST["email"]);
+            $title = mysqli_real_escape_string($conn, $_POST["title"]);
+            $tags = mysqli_real_escape_string($conn, $_POST["tags"]);
+            $price = mysqli_real_escape_string($conn, $_POST["price"]);
+
+            // Create sql query
+            $sql = "INSERT INTO books (title, tags, email, price) VALUES('$title', '$tags', '$email', '$price')";
+
+            // Save to db and check
+            if(!mysqli_query($conn, $sql)){
+                echo "Query Error: ". mysqli_error($conn);
+            }else{
+                header("Location: index.php");
+            }
         }
 
         // end of POST check
@@ -69,6 +91,15 @@
                     <label for="tags">Book Tags(comma seperated)</label>
                     <div class="red-text">
                         <?php echo $errors["tags"]; ?>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div  class="input-field col s12">
+                    <input type="number" name="price" value="<?php echo htmlspecialchars($price); ?>">
+                    <label for="price">Price</label>
+                    <div class="red-text">
+                        <?php echo $errors["price"]; ?>
                     </div>
                 </div>
             </div>
